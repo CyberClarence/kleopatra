@@ -17,9 +17,10 @@ import {
  * with AES-256-GCM in the browser before upload — the server only ever sees
  * ciphertext. See feature/syncCrypto.ts for the key derivation scheme.
  *
- * Point NEXT_PUBLIC_SYNC_API_URL at a remote deployment (used by the Electron
- * build so the desktop app talks to the hosted sync server); the web app uses
- * same-origin relative URLs.
+ * NEXT_PUBLIC_SYNC_API_URL points at the secure remote API (the Cloudflare
+ * Worker on api.kleopatra.app) — set for production web and Electron builds.
+ * Without it (local dev) the app falls back to the same-origin Next.js dev
+ * routes under app/api/sync/.
  */
 const API_BASE = process.env.NEXT_PUBLIC_SYNC_API_URL || "";
 

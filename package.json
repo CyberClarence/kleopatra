@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "electron:dev": "node scripts/electron-dev.mjs",
-    "electron:build": "BUILD_STANDALONE=1 NEXT_PUBLIC_SYNC_API_URL=\"${NEXT_PUBLIC_SYNC_API_URL:-https://kleopatra.app}\" next build && electron-builder",
+    "electron:build": "BUILD_STANDALONE=1 NEXT_PUBLIC_SYNC_API_URL=\"${NEXT_PUBLIC_SYNC_API_URL:-https://api.kleopatra.app}\" next build && electron-builder",
     "electron:release": "set -a && . ./.env.signing && set +a && bun run electron:build"
   },
   "build": {
@@ -45,12 +45,10 @@
     "npmRebuild": false
   },
   "dependencies": {
-    "@types/pg": "^8.20.0",
     "immer": "^10.1.1",
     "lucide-react": "^0.417.0",
     "next": "^16.1.6",
     "openpgp": "^5.11.2",
-    "pg": "^8.22.0",
     "posthog-js": "^1.399.2",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",

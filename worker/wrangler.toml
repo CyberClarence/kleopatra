@@ -1,0 +1,27 @@
+name = "kleopatra-api"
+main = "src/index.ts"
+compatibility_date = "2026-04-13"
+account_id = "8dca2300ac53e8fdf5764246c4a8a62c"
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kleopatra-sync"
+database_id = "5fedbfb4-d258-42a7-ae9a-99cd80339127"
+
+[[r2_buckets]]
+binding = "RELEASES"
+bucket_name = "kleopatra-releases"
+
+[vars]
+POSTMARK_FROM_EMAIL = "auth@mail.kleopatra.app"
+DOWNLOAD_MAC_KEY = "Kleopatra-0.1.0-arm64.dmg"
+DOWNLOAD_WIN_KEY = "Kleopatra-Setup-0.1.0.exe"
+
+[[routes]]
+pattern = "api.kleopatra.app"
+custom_domain = true
+
+# Secrets (wrangler secret put): POSTMARK_API_TOKEN, SYNC_SERVER_SECRET

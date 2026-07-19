@@ -35,7 +35,7 @@ import * as openpgp from "openpgp";
 import { useKeyStore } from "@/feature/keystore";
 import { useSyncStore } from "@/feature/sync";
 import { useTheme } from "@/feature/theme";
-import { AppleLogo, WindowsLogo, DESKTOP_DOWNLOAD_URL } from "@/components/BrandIcons";
+import { AppleLogo, WindowsLogo, desktopDownloadUrl } from "@/components/BrandIcons";
 
 const archivo = Archivo({ subsets: ["latin"] });
 const mono = JetBrains_Mono({ subsets: ["latin"] });
@@ -1201,33 +1201,38 @@ export default function Home() {
             <span className="flex-1">Discord</span>
           </a>
 
-          <div className="sigil-label" style={{ padding: "14px 10px 8px" }}>
-            Misc
-          </div>
-          <a
-            href="https://irc-server.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sigil-nav"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <span className="flex-none inline-flex" style={{ color: "var(--text-muted)" }}>
-              <Hash className="w-[15px] h-[15px]" />
-            </span>
-            <span className="flex-1">irc-server.org</span>
-          </a>
-          <a
-            href="https://discordpgp.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sigil-nav"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <span className="flex-none inline-flex" style={{ color: "var(--text-muted)" }}>
-              <Globe className="w-[15px] h-[15px]" />
-            </span>
-            <span className="flex-1">discordpgp.com</span>
-          </a>
+          {/* Misc links are web-only — hidden in the desktop app */}
+          {!isDesktopApp && (
+            <>
+              <div className="sigil-label" style={{ padding: "14px 10px 8px" }}>
+                Misc
+              </div>
+              <a
+                href="https://irc-server.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sigil-nav"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <span className="flex-none inline-flex" style={{ color: "var(--text-muted)" }}>
+                  <Hash className="w-[15px] h-[15px]" />
+                </span>
+                <span className="flex-1">irc-server.org</span>
+              </a>
+              <a
+                href="https://discordpgp.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sigil-nav"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <span className="flex-none inline-flex" style={{ color: "var(--text-muted)" }}>
+                  <Globe className="w-[15px] h-[15px]" />
+                </span>
+                <span className="flex-1">discordpgp.com</span>
+              </a>
+            </>
+          )}
 
           {/* Desktop app download */}
           {mounted && !isDesktopApp && (
@@ -1246,9 +1251,7 @@ export default function Home() {
                 Native app for macOS &amp; Windows, with the same encrypted sync.
               </div>
               <a
-                href={DESKTOP_DOWNLOAD_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={desktopDownloadUrl()}
                 className="sigil-btn sigil-btn-primary w-full"
                 style={{ height: "28px", justifyContent: "center" }}
               >
@@ -1825,7 +1828,7 @@ export default function Home() {
           <span>
             {mounted && syncToken
               ? `Sync on · ${syncStatus === "syncing" ? "syncing…" : "end-to-end encrypted"}`
-              : "Nothing stored on servers · Local only"}
+              : "Remote sync off"}
           </span>
           <span className="flex-1" />
           <a

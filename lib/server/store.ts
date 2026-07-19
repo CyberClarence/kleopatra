@@ -1,13 +1,13 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { Pool } from "pg";
 
 /**
- * Tiny KV abstraction for the sync backend. Backend is picked from env:
+ * Tiny KV abstraction for the DEV sync backend (app/api/sync/* routes used by
+ * `next dev`). Production traffic goes to the Cloudflare Worker in worker/
+ * (api.kleopatra.app, D1-backed) — these routes are a local fallback so the
+ * flow works offline without any provider setup.
  *
- * 1. SYNC_DATABASE_URL — Postgres (kleopatra_kv table, created on demand)
- * 2. UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN — Upstash Redis REST
- * 3. Fallback: a JSON file under .data/ (dev only — ephemeral on Vercel)
+ * Backends: Upstash Redis REST if configured, else a JSON file under .data/.
  */
 
 type Entry = { value: string; expiresAt: number | null };
@@ -50,48 +50,6 @@ class UpstashKV implements KV {
 
   async del(key: string) {
     await this.command(["DEL", key]);
-  }
-}
-
-class PostgresKV implements KV {
-  private pool: Pool;
-  private ready: Promise<unknown>;
-
-  constructor(connectionString: string) {
-    // Small pool — this runs in serverless functions.
-    this.pool = new Pool({ connectionString, max: 3 });
-    this.ready = this.pool.query(
-      "CREATE TABLE IF NOT EXISTS kleopatra_kv (key text PRIMARY KEY, value text NOT NULL, expires_at bigint)"
-    );
-  }
-
-  async get(key: string) {
-    await this.ready;
-    const res = await this.pool.query(
-      "SELECT value, expires_at FROM kleopatra_kv WHERE key = $1",
-      [key]
-    );
-    if (!res.rowCount) return null;
-    const { value, expires_at } = res.rows[0];
-    if (expires_at !== null && Date.now() > Number(expires_at)) {
-      await this.pool.query("DELETE FROM kleopatra_kv WHERE key = $1", [key]);
-      return null;
-    }
-    return value as string;
-  }
-
-  async set(key: string, value: string, ttlSeconds?: number) {
-    await this.ready;
-    await this.pool.query(
-      `INSERT INTO kleopatra_kv (key, value, expires_at) VALUES ($1, $2, $3)
-       ON CONFLICT (key) DO UPDATE SET value = $2, expires_at = $3`,
-      [key, value, ttlSeconds ? Date.now() + ttlSeconds * 1000 : null]
-    );
-  }
-
-  async del(key: string) {
-    await this.ready;
-    await this.pool.query("DELETE FROM kleopatra_kv WHERE key = $1", [key]);
   }
 }
 
@@ -158,17 +116,9 @@ declare global {
 }
 
 function createKV(): KV {
-  if (process.env.SYNC_DATABASE_URL) {
-    return new PostgresKV(process.env.SYNC_DATABASE_URL);
-  }
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (url && token) return new UpstashKV(url, token);
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL) {
-    console.warn(
-      "[sync] Neither SYNC_DATABASE_URL nor Upstash configured — falling back to file storage, which does NOT persist on Vercel."
-    );
-  }
   return new FileKV();
 }
 

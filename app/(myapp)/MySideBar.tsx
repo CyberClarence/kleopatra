@@ -23,7 +23,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { AppleLogo, WindowsLogo, DESKTOP_DOWNLOAD_URL } from "@/components/BrandIcons";
+import { AppleLogo, WindowsLogo, desktopDownloadUrl } from "@/components/BrandIcons";
 
 export const MySideBar = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -272,9 +272,7 @@ export const MySideBar = () => {
           {/* Desktop app download */}
           {!isLoading && !isDesktopApp && (
             <a
-              href={DESKTOP_DOWNLOAD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={desktopDownloadUrl()}
               className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-xl transition-all hover:opacity-90"
               style={{
                 background: "var(--accent-subtle)",

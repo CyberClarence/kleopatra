@@ -12,5 +12,15 @@ export const WindowsLogo = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export const DESKTOP_DOWNLOAD_URL =
-  "https://github.com/nicobytes/kleopatra/releases/latest";
+/**
+ * Direct download from our own API (Cloudflare Worker streaming the installer
+ * from R2) — the button triggers the download immediately, no GitHub page.
+ */
+const DOWNLOAD_BASE = "https://api.kleopatra.app/download";
+
+export const desktopDownloadUrl = () => {
+  const isWindows =
+    typeof navigator !== "undefined" &&
+    /win/i.test(navigator.platform || navigator.userAgent);
+  return `${DOWNLOAD_BASE}/${isWindows ? "windows" : "mac"}`;
+};
