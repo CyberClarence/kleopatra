@@ -13,6 +13,7 @@ import {
   FileKey,
   HelpCircle,
   Shield,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -67,6 +68,14 @@ const tools: Tool[] = [
     description:
       "A complete PGP tool in your browser. Encrypt, decrypt, sign and verify messages without installing any software.",
     category: "tool",
+  },
+  {
+    slug: "public-key-vs-private-key",
+    icon: KeyRound,
+    title: "Public Key vs Private Key",
+    description:
+      "What the two keys are, why they matter, and how to use them in real life — from sending your address encrypted to filing a confidential report.",
+    category: "guide",
   },
   {
     slug: "what-is-pgp",

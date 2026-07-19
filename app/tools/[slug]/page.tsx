@@ -1,11 +1,43 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Shield, CheckCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Shield,
+  CheckCircle,
+  Globe,
+  KeyRound,
+  Lock,
+  Unlock,
+  MapPin,
+  FileLock2,
+  Building2,
+  Cloud,
+  Send,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 
 const BASE_URL = "https://kleopatra.app";
 
 type FAQ = { q: string; a: string };
+
+/** Icon names usable in article `sections` cards. */
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  globe: Globe,
+  key: KeyRound,
+  lock: Lock,
+  unlock: Unlock,
+  mappin: MapPin,
+  filelock: FileLock2,
+  building: Building2,
+  cloud: Cloud,
+  send: Send,
+  shieldcheck: ShieldCheck,
+};
+
+type SectionCard = { icon: keyof typeof SECTION_ICONS; title: string; text: string };
+type ArticleSection = { heading: string; lead?: string; cards: SectionCard[] };
 
 type ToolContent = {
   title: string;
@@ -15,6 +47,8 @@ type ToolContent = {
   headline: string;
   intro: string;
   body: string[];
+  /** Optional illustrated card sections rendered after the body. */
+  sections?: ArticleSection[];
   cta: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
   faqs: FAQ[];
@@ -22,6 +56,115 @@ type ToolContent = {
 };
 
 const tools: Record<string, ToolContent> = {
+  "public-key-vs-private-key": {
+    title: "Public Key vs Private Key",
+    metaTitle: "Public Key vs Private Key — What They Are & Why You Need Them",
+    metaDescription:
+      "What is a public key? What is a private key? Understand how key pairs protect your messages, with real examples — and how Kleopatra makes them easy to use, free in your browser.",
+    keywords: [
+      "public key vs private key",
+      "what is a public key",
+      "what is a private key",
+      "asymmetric encryption explained",
+      "how does pgp encryption work",
+      "send encrypted message online",
+    ],
+    headline: "Public Key vs Private Key — Encryption Explained Simply",
+    intro:
+      "Almost everything you write online — addresses, contracts, reports, credentials — travels through and gets stored on machines you don't control. A key pair fixes that: one key the whole world can see, one key that never leaves your device. Here's how the two work together, and how Kleopatra makes them usable by anyone.",
+    body: [
+      "Think of your **public key** as a personal mailbox with a slot: you can bolt it to your front door, print it in a newspaper, or paste it in your email signature. Anyone can drop a letter in. Your **private key** is the only key that opens that mailbox. The two are generated together as a mathematically linked pair — what one locks, only the other unlocks.",
+      "When someone wants to send you something confidential, they encrypt it with your public key. From that moment the message is an unreadable block of text for everyone — the messaging app, the email provider, an attacker who intercepts it, even the sender themselves can no longer read it. Only your private key can turn it back into the original message.",
+      "**Why isn't HTTPS enough?** The padlock in your browser only protects data while it travels between you and a server. Once it arrives, it sits in plain text on that server — readable by the company, its employees, its subcontractors, and whoever breaches them. Public-key encryption is **end-to-end**: the content stays sealed until it reaches the one person meant to read it, no matter how many services relay or store it in between.",
+      "This also works in reverse, and that's the second superpower of a key pair: **signing**. Something encrypted (signed) with your private key can be verified by anyone using your public key — proving the message really came from you and wasn't altered. Encryption gives you secrecy; signatures give you authenticity.",
+      "**How Kleopatra helps:** Kleopatra turns all of this into a few clicks. Generate a key pair in your browser (Curve 25519 or RSA 4096), keep your private key on your device, share your public key with one click, and encrypt, decrypt, sign, and verify from a clean interface — no command line, no installation. Everything runs locally in your browser; with optional Online Sync your keys are AES-256-encrypted on your device before they're backed up, so even our server can't read them. There's also a native desktop app for macOS and Windows.",
+    ],
+    sections: [
+      {
+        heading: "The Two Keys at a Glance",
+        cards: [
+          {
+            icon: "globe",
+            title: "Public key — share it freely",
+            text: "Like a mailbox slot: anyone can use it to send you an encrypted message. Publishing it is safe — it can only lock, never unlock.",
+          },
+          {
+            icon: "key",
+            title: "Private key — never leaves you",
+            text: "The only key that opens your mailbox. It stays on your device, ideally protected by a passphrase. Whoever holds it can read your mail and sign as you.",
+          },
+          {
+            icon: "lock",
+            title: "Together — lock & unlock",
+            text: "They are generated as one mathematical pair. Encrypted with the public key → only the private key decrypts. Signed with the private key → anyone verifies with the public key.",
+          },
+        ],
+      },
+      {
+        heading: "Two Everyday Examples",
+        lead: "Public-key encryption isn't just for spies and sysadmins — it solves ordinary problems the moment a message is too sensitive for a plain chat or email.",
+        cards: [
+          {
+            icon: "mappin",
+            title: "Sending your home address to an online seller",
+            text: "You buy something from a marketplace seller or a small shop and they ask for your delivery address in the chat. That chat is stored forever on someone's server. Instead: ask for their public key, paste it into Kleopatra, encrypt your address, and send the scrambled block. The platform, its moderators, and any future data breach see only gibberish — the seller alone can decrypt it.",
+          },
+          {
+            icon: "filelock",
+            title: "Submitting a confidential report to a company",
+            text: "Many companies publish a PGP public key on their security or ethics page precisely for this. Import that key into Kleopatra, write your report — a vulnerability you found, a compliance concern, sensitive evidence — encrypt it, and email the block. Even if the mailbox is shared, forwarded, or intercepted, only the security team's private key can open it. Sign it with your own key if you want them to verify it's really you.",
+          },
+        ],
+      },
+      {
+        heading: "What Kleopatra Does for You",
+        cards: [
+          {
+            icon: "key",
+            title: "One-click key pair",
+            text: "Generate a modern Curve 25519 or RSA 4096 key pair in seconds, entirely in your browser. Export and back up your keys anytime.",
+          },
+          {
+            icon: "unlock",
+            title: "Encrypt, decrypt, sign, verify",
+            text: "Paste a key or a message and go. No command line, no installs — and nothing you type ever reaches our servers.",
+          },
+          {
+            icon: "cloud",
+            title: "Encrypted sync & desktop app",
+            text: "Optional Online Sync backs up your keys AES-256-encrypted on your device before upload, so only your password unlocks them — across the web app and the macOS/Windows desktop app.",
+          },
+        ],
+      },
+    ],
+    cta: { label: "Create Your Key Pair Now", href: "/" },
+    secondaryCta: { label: "Encrypt a Message", href: "/" },
+    faqs: [
+      {
+        q: "Is it safe to share my public key?",
+        a: "Yes — that's exactly what it's for. A public key can only encrypt messages to you and verify your signatures. It cannot decrypt anything, and it doesn't reveal your private key.",
+      },
+      {
+        q: "What happens if I lose my private key?",
+        a: "Messages encrypted to you become permanently unreadable — there is no reset button, which is precisely what makes the system trustworthy. Back up your private key (Kleopatra lets you export it) and consider the encrypted Online Sync so a lost device doesn't mean lost keys.",
+      },
+      {
+        q: "How is this different from the padlock (HTTPS) in my browser?",
+        a: "HTTPS protects data in transit between you and a server, but the server itself reads everything. Public-key encryption protects the content end-to-end: only the person holding the matching private key can ever read it, no matter where it travels or is stored.",
+      },
+      {
+        q: "Do both sides need Kleopatra?",
+        a: "No. Kleopatra produces standard OpenPGP messages. The other side can use any OpenPGP tool — GPG, the Gpg4win Kleopatra desktop app, ProtonMail, or Kleopatra in their own browser.",
+      },
+    ],
+    trustPoints: [
+      "Plain-language explanation",
+      "Real-world examples included",
+      "Keys generated 100% in your browser",
+      "Open source and free",
+    ],
+  },
+
   "pgp-encrypt": {
     title: "PGP Encrypt Online",
     metaTitle: "PGP Encrypt Online — Free Browser-Based PGP Encryption",
@@ -595,6 +738,59 @@ export default async function ToolPage({
             );
           })}
         </div>
+
+        {/* Illustrated sections */}
+        {tool.sections?.map((section) => (
+          <section key={section.heading} className="flex flex-col gap-4" style={{ marginTop: "44px" }}>
+            <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 800, letterSpacing: "-0.02em", color: "#1a1c1f" }}>
+              {section.heading}
+            </h2>
+            {section.lead && (
+              <p style={{ margin: 0, maxWidth: "680px", fontSize: "16px", lineHeight: 1.65, color: "#4e5058" }}>
+                {section.lead}
+              </p>
+            )}
+            <div
+              className="grid gap-3"
+              style={{
+                gridTemplateColumns:
+                  section.cards.length === 2
+                    ? "repeat(auto-fit, minmax(280px, 1fr))"
+                    : "repeat(auto-fit, minmax(220px, 1fr))",
+              }}
+            >
+              {section.cards.map((card) => {
+                const Icon = SECTION_ICONS[card.icon];
+                return (
+                  <div
+                    key={card.title}
+                    className="flex flex-col gap-3"
+                    style={{
+                      borderRadius: "16px",
+                      padding: "22px",
+                      background: "#fff",
+                      border: "1px solid #ececf0",
+                      boxShadow: "0 1px 2px rgba(20,20,30,0.04)",
+                    }}
+                  >
+                    <span
+                      className="inline-flex items-center justify-center flex-none"
+                      style={{ width: "42px", height: "42px", borderRadius: "12px", background: "#fdecec" }}
+                    >
+                      <Icon className="w-5 h-5" style={{ color: "#d61f2b" }} />
+                    </span>
+                    <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#1a1c1f" }}>
+                      {card.title}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: "14.5px", lineHeight: 1.65, color: "#5c5f66" }}>
+                      {card.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
 
         {/* Privacy callout */}
         <div
