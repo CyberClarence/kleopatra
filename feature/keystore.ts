@@ -33,6 +33,8 @@ type KeyStoreActions = {
   getPublicKeyFromMyPublicKeys: (name: string) => Promise<SerialisablePublicKey>;
   deletePrivateKey: (keyname: string) => void;
   deletePublicKey: (keyname: string) => void;
+  renamePrivateKey: (keyid: string, keyname: string) => void;
+  renamePublicKey: (keyid: string, keyname: string) => void;
 };
 
 type KeyStoreInterface = KeyStoreData & KeyStoreActions;
@@ -127,6 +129,21 @@ export const keyStore: StateCreator<KeyStoreInterface> = (set, get) => ({
     const { myPublicKeys } = get();
     const filteredKeys = myPublicKeys.filter(key => key.id !== keyid);
     set({ myPublicKeys: filteredKeys });
+  },
+  renamePrivateKey: (keyid: string, keyname: string) => {
+    // Only the display label changes; the stored armored key is untouched.
+    set({
+      myPrivateKeys: get().myPrivateKeys.map((key) =>
+        key.id === keyid ? { ...key, keyname } : key
+      ),
+    });
+  },
+  renamePublicKey: (keyid: string, keyname: string) => {
+    set({
+      myPublicKeys: get().myPublicKeys.map((key) =>
+        key.id === keyid ? { ...key, keyname } : key
+      ),
+    });
   },
   myPrivateKeys: [],
   myPublicKeys: [],

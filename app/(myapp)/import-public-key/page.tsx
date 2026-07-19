@@ -1,14 +1,14 @@
 "use client";
 import * as openpgp from "openpgp";
-import { Key, AlertCircle, FileCheck, Trash2 } from "lucide-react";
+import { Users, Key, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useKeyStore } from "@/feature/keystore";
 import { useRouter } from "next/navigation";
 import KeyImporter from "@/components/KeyImporter";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Dialog, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 
-const TEXTAREA_EXPLAINATORY_TEXT = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+const TEXTAREA_PLACEHOLDER = `-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQGNBGaTvVsBDADZQTd3aWlBH3RmyZCqEL5URrLIBgT8i44F0UsktvoJCxRT7Y9B
 TKHcryIoIseTjkJxIoF2nSxC64ytG7b1FlM1bx7dskFOa8ASpjpLZ2o4xPoKDpoz...`;
@@ -18,24 +18,18 @@ export default function ImportPublicKeyPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [keyName, setKeyName] = useState("");
+  const [pendingKey, setPendingKey] = useState("");
 
   const handleKeyImport = async (keyString: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const _isValidKey = await openpgp.readKey({ armoredKey: keyString });
-
-      const keyName = prompt("Enter a name for this public key:");
-      if (!keyName) {
-        setError("Key name is required");
-        return;
-      }
-
-      const newKey = await importPublicKeyToMyStore(keyName, keyString);
-      router.push(`/public/${newKey.id}`);
+      await openpgp.readKey({ armoredKey: keyString });
+      setPendingKey(keyString);
+      setShowNameDialog(true);
     } catch (err) {
       setError("Invalid public key format. Please check and try again.");
     } finally {
@@ -43,101 +37,101 @@ export default function ImportPublicKeyPage() {
     }
   };
 
-  return (
-    <div className="relative  w-full bg-[#0A192F] text-cyan-50 h-full">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 h-full">
-        <div className="flex flex-col space-y-6 sm:space-y-8 h-full">
-          {/* Header Section */}
-          <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 sm:p-3 rounded-xl bg-cyan-500/10 shadow-inner">
-                <Key className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                Import a new Public Key
-              </h1>
-            </div>
-          </header>
+  const handleNameSubmit = async () => {
+    if (!keyName.trim()) {
+      setError("Key name is required");
+      return;
+    }
 
-          {/* Main Content */}
-          <div className="grid gap-6 sm:gap-8 h-full w-full overflow-auto">
-            <KeyImporter
-              heading={<div className="sr-only">Import Public Key Form</div>}
-              textareaPlaceholder={TEXTAREA_EXPLAINATORY_TEXT}
-              validateImportButtonLabel={
-                <span className="flex items-center gap-2">
-                  <Key className="w-4 h-4" />
-                  <span className="hidden sm:inline">Validate &</span> Import
-                </span>
-              }
-              validateImportHandler={handleKeyImport}
-            />
-          </div>
-        </div>
+    setIsLoading(true);
+    try {
+      const newKey = await importPublicKeyToMyStore(keyName, pendingKey);
+      router.push(`/public/${newKey.id}`);
+    } catch (err) {
+      setError("Failed to import key");
+    } finally {
+      setIsLoading(false);
+      setShowNameDialog(false);
+    }
+  };
+
+  return (
+    <div className="relative flex flex-col w-full h-full overflow-auto">
+      <div className="flex-1 px-5 py-6 md:px-8 max-w-4xl mx-auto w-full">
+        <KeyImporter
+          heading={
+            <header className="flex items-center gap-3">
+              <div className="icon-wrap-indigo">
+                <Users className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div>
+                <p className="section-label mb-0.5">Public Key</p>
+                <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--text-heading)" }}>
+                  Import Public Key
+                </h1>
+              </div>
+            </header>
+          }
+          textareaPlaceholder={TEXTAREA_PLACEHOLDER}
+          validateImportButtonLabel={
+            <span className="flex items-center gap-2">
+              <Key className="w-4 h-4" />
+              Validate & Import
+            </span>
+          }
+          validateImportHandler={handleKeyImport}
+        />
       </div>
 
-      {/* Floating Elements */}
+      {/* Name dialog */}
+      <Dialog
+        isOpen={showNameDialog}
+        onClose={() => setShowNameDialog(false)}
+        title="Name This Key"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-tertiary)" }}>
+              Contact Name
+            </label>
+            <input
+              type="text"
+              value={keyName}
+              onChange={(e) => setKeyName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleNameSubmit()}
+              className="input-field"
+              placeholder="e.g. Alice, Bob's Work Key…"
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setShowNameDialog(false)} className="btn-neutral">
+              Cancel
+            </button>
+            <button onClick={handleNameSubmit} className="btn-primary">
+              <Key className="w-4 h-4" />
+              Save & Import
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
       {isLoading && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 border border-cyan-800/30 rounded-lg p-4 sm:p-6 flex flex-col items-center space-y-3 sm:space-y-4 max-w-[90vw] sm:max-w-md">
-            <LoadingSpinner className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
-            <p className="text-cyan-300 text-sm sm:text-base text-center">
-              Processing public key...
-            </p>
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4" style={{ background: "var(--bg-overlay)" }}>
+          <div className="flex flex-col items-center gap-4 p-8 rounded-2xl" style={{ background: "var(--overlay-card-bg)", border: "1px solid var(--overlay-card-border)" }}>
+            <LoadingSpinner className="w-8 h-8 text-cyan-500" />
+            <p className="text-sm" style={{ color: "var(--text-accent)" }}>Processing public key…</p>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="fixed bottom-4 right-4 max-w-[calc(100vw-2rem)] sm:max-w-md bg-red-900/90 text-red-100 p-3 sm:p-4 rounded-lg flex items-center gap-2 animate-in slide-in-from-bottom shadow-lg">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <p className="text-sm sm:text-base line-clamp-3">{error}</p>
+        <div className="fixed bottom-5 right-5 max-w-sm animate-slide-up flex items-start gap-3 p-4 rounded-xl shadow-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--danger-border)" }}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "var(--danger-text)" }} />
+          <p className="flex-1 text-sm" style={{ color: "var(--text-primary)" }}>{error}</p>
+          <button onClick={() => setError(null)} className="text-xs" style={{ color: "var(--text-tertiary)" }}>✕</button>
         </div>
       )}
-
-      {/* Dialogs */}
-      <Dialog
-        isOpen={showVerifyDialog}
-        onClose={() => setShowVerifyDialog(false)}
-        title="Verify Digital Signature"
-      >
-        <div className="space-y-4">
-          <p className="text-cyan-300 text-sm sm:text-base">
-            Paste the signature you want to verify with this public key.
-          </p>
-          <textarea
-            className="w-full h-32 sm:h-40 bg-slate-800 border border-cyan-800/30 rounded-lg p-3 text-cyan-100 text-sm resize-none focus:ring-2 focus:ring-cyan-500/50 focus:outline-none"
-            placeholder="Paste signature here..."
-          />
-          <button className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors text-white font-medium">
-            Verify Signature
-          </button>
-        </div>
-      </Dialog>
-
-      <Dialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        title="Delete Public Key"
-      >
-        <div className="space-y-4">
-          <p className="text-red-300 text-sm sm:text-base">
-            Are you sure you want to delete this public key? This action cannot
-            be undone.
-          </p>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setShowDeleteDialog(false)}
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-sm sm:text-base font-medium"
-            >
-              Cancel
-            </button>
-            <button className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors text-sm sm:text-base font-medium">
-              Delete
-            </button>
-          </div>
-        </div>
-      </Dialog>
     </div>
   );
 }

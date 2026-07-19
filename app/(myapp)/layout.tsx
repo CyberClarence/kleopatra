@@ -4,7 +4,7 @@ import { MySideBar } from "./MySideBar";
 import { useKeyStore } from "@/feature/keystore";
 
 type MyAppLayoutProps = {
-  children: ReactNode[];
+  children: ReactNode;
 };
 
 const Hydrate = () => {
@@ -19,11 +19,14 @@ export default function MyAppLayout({ children }: MyAppLayoutProps) {
   return (
     <>
       <Hydrate />
-      <div className="flex w-full h-full overflow-auto">
+      <div className="flex w-full h-full overflow-hidden">
         <MySideBar />
-        <div className="flex-1 overflow-auto w-full pt-20 lg:pt-0">
+        <main
+          className="flex-1 overflow-auto w-full pt-16 lg:pt-0"
+          style={{ background: "var(--bg-page)" }}
+        >
           {children}
-        </div>
+        </main>
       </div>
     </>
   );

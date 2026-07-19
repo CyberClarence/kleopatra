@@ -20,6 +20,12 @@
 .DS_Store
 *.pem
 
+# sync dev storage
+/.data
+
+# electron build output
+/dist-electron
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -28,9 +34,16 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# code-signing secrets — never commit
+.env.signing
+/certs
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local claude settings
+.claude/settings.local.json

@@ -1,13 +1,14 @@
 "use client";
 import * as openpgp from "openpgp";
-import { Import, Shield, Key, AlertCircle } from "lucide-react";
+import { Shield, Key, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useKeyStore } from "@/feature/keystore";
 import { useRouter } from "next/navigation";
 import KeyImporter from "@/components/KeyImporter";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Dialog, DialogHeader, DialogFooter } from "@/components/ui/dialog";
-const TEXTAREA_EXPLAINATORY_TEXT = `-----BEGIN PGP PRIVATE KEY BLOCK-----
+import { Dialog } from "@/components/ui/dialog";
+
+const TEXTAREA_PLACEHOLDER = `-----BEGIN PGP PRIVATE KEY BLOCK-----
 
 lQVYBGaTvVsBDADZQTd3aWlBH3RmyZCqEL5URrLIBgT8i44F0UsktvoJCxRT7Y9B
 TKHcryIoIseTjkJxIoF2nSxC64ytG7b1FlM1bx7dskFOa8ASpjpLZ2o4xPoKDpoz...`;
@@ -24,11 +25,8 @@ export default function ImportNewPrivateKey() {
   const handleKeyImport = async (keyString: string) => {
     setIsLoading(true);
     setError(null);
-
     try {
-      const _isValidKey = await openpgp.readPrivateKey({
-        armoredKey: keyString,
-      });
+      await openpgp.readPrivateKey({ armoredKey: keyString });
       setPendingKey(keyString);
       setShowNameDialog(true);
     } catch (err) {
@@ -44,7 +42,6 @@ export default function ImportNewPrivateKey() {
       setError("Key name is required");
       return;
     }
-
     setIsLoading(true);
     try {
       const newKey = await importNewPrivateKeyToMyStore(keyName, pendingKey);
@@ -74,19 +71,22 @@ export default function ImportNewPrivateKey() {
 
   return (
     <div className="relative flex flex-col w-full h-full overflow-auto">
-      <div className="flex-1 px-4 py-6 sm:px-6 md:px-8 lg:px-12 max-w-7xl mx-auto w-full">
+      <div className="flex-1 px-5 py-6 md:px-8 max-w-4xl mx-auto w-full">
         <KeyImporter
           heading={
-            <header className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-              <div className="p-2.5 rounded-xl bg-cyan-500/10 shadow-inner">
-                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
+            <header className="flex items-center gap-3">
+              <div className="icon-wrap">
+                <Shield className="w-5 h-5 text-cyan-500" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                Create or Import Private Key
-              </h1>
+              <div>
+                <p className="section-label mb-0.5">Private Key</p>
+                <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--text-heading)" }}>
+                  Create or Import Private Key
+                </h1>
+              </div>
             </header>
           }
-          textareaPlaceholder={TEXTAREA_EXPLAINATORY_TEXT}
+          textareaPlaceholder={TEXTAREA_PLACEHOLDER}
           validateImportButtonLabel={
             <span className="flex items-center gap-2">
               <Key className="w-4 h-4" />
@@ -95,62 +95,50 @@ export default function ImportNewPrivateKey() {
           }
           validateImportHandler={handleKeyImport}
           generateRandomKeyHandler={generateRandomKeyHandler}
-          generateRandomKeyLabel="Generate New Random Private Key"
+          generateRandomKeyLabel="RSA 4096-bit"
         />
       </div>
 
-      <Dialog
-        isOpen={showNameDialog}
-        onClose={() => setShowNameDialog(false)}
-        title="Name Your Private Key"
-      >
+      <Dialog isOpen={showNameDialog} onClose={() => setShowNameDialog(false)} title="Name Your Key">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-cyan-300 mb-2">
+            <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-tertiary)" }}>
               Key Name
             </label>
             <input
               type="text"
               value={keyName}
               onChange={(e) => setKeyName(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-800/50 border border-cyan-800/30 rounded-lg text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-              placeholder="Enter a secure name for your key"
+              onKeyDown={(e) => e.key === "Enter" && handleNameSubmit()}
+              className="input-field"
+              placeholder="e.g. Work Key, Personal Key…"
               autoFocus
             />
           </div>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setShowNameDialog(false)}
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleNameSubmit}
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded-lg text-white transition-colors flex items-center gap-2"
-            >
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setShowNameDialog(false)} className="btn-neutral">Cancel</button>
+            <button onClick={handleNameSubmit} className="btn-primary">
               <Key className="w-4 h-4" />
-              Import Key
+              Save & Import
             </button>
           </div>
         </div>
       </Dialog>
 
       {isLoading && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 border border-cyan-800/30 rounded-lg p-6 flex flex-col items-center space-y-4 mx-4">
-            <LoadingSpinner className="w-8 h-8 text-cyan-400" />
-            <p className="text-cyan-300 text-center">
-              Processing your private key...
-            </p>
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50" style={{ background: "var(--bg-overlay)" }}>
+          <div className="flex flex-col items-center gap-4 p-8 rounded-2xl" style={{ background: "var(--overlay-card-bg)", border: "1px solid var(--overlay-card-border)" }}>
+            <LoadingSpinner className="w-8 h-8 text-cyan-500" />
+            <p className="text-sm" style={{ color: "var(--text-accent)" }}>Processing key…</p>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="fixed bottom-4 right-4 left-4 sm:left-auto bg-red-900/90 text-red-100 p-4 rounded-lg flex items-center gap-2 animate-in slide-in-from-bottom max-w-md ml-auto">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm">{error}</span>
+        <div className="fixed bottom-5 right-5 max-w-sm animate-slide-up flex items-start gap-3 p-4 rounded-xl shadow-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--danger-border)" }}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "var(--danger-text)" }} />
+          <p className="flex-1 text-sm" style={{ color: "var(--text-primary)" }}>{error}</p>
+          <button onClick={() => setError(null)} className="text-xs" style={{ color: "var(--text-tertiary)" }}>✕</button>
         </div>
       )}
     </div>

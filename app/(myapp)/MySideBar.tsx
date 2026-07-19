@@ -1,149 +1,372 @@
 "use client";
 
 import { useKeyStore } from "@/feature/keystore";
+import { useSyncStore } from "@/feature/sync";
+import { useTheme } from "@/feature/theme";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { KeyRound, Users, Plus, Shield, Loader2, Menu, X } from "lucide-react";
+import {
+  KeyRound,
+  Users,
+  Plus,
+  Shield,
+  Loader2,
+  Menu,
+  X,
+  Lock,
+  Github,
+  Wrench,
+  Sun,
+  Moon,
+  Cloud,
+  CloudOff,
+  AlertCircle,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { AppleLogo, WindowsLogo, DESKTOP_DOWNLOAD_URL } from "@/components/BrandIcons";
 
 export const MySideBar = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isDesktopApp, setIsDesktopApp] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const myPrivateKeys = useKeyStore((s) => s.myPrivateKeys);
-  const myFriendPublicKeys = useKeyStore((s) => s.myPublicKeys);
+  const myPublicKeys = useKeyStore((s) => s.myPublicKeys);
+  const syncEmail = useSyncStore((s) => s.email);
+  const syncToken = useSyncStore((s) => s.token);
+  const syncStatus = useSyncStore((s) => s.status);
+  const pathname = usePathname();
+  const { theme, toggle } = useTheme();
 
   useEffect(() => {
     useKeyStore.persist.rehydrate();
+    setIsDesktopApp(Boolean((window as any).kleopatraDesktop));
     setIsLoading(false);
   }, []);
 
-  const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
+  const closeMobile = () => setIsMobileOpen(false);
 
   return (
     <>
-      {/* Mobile Toggle Button */}
+      {/* Mobile toggle */}
       <button
-        onClick={toggleMobile}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 transition-all"
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl transition-all"
+        style={{
+          border: "1px solid var(--border-subtle)",
+          background: "var(--bg-card)",
+          color: "var(--text-accent)",
+        }}
+        aria-label="Toggle sidebar"
       >
-        {isMobileOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <Menu className="w-6 h-6" />
-        )}
+        {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
-      {/* Backdrop for mobile */}
+      {/* Backdrop */}
       {isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
-          onClick={toggleMobile}
+          className="lg:hidden fixed inset-0 backdrop-blur-sm z-30"
+          style={{ background: "var(--bg-overlay)" }}
+          onClick={closeMobile}
         />
       )}
 
-      {/* Sidebar Container */}
-      <div
-        className={`fixed lg:relative w-[85vw] sm:w-[450px] lg:w-[450px] h-full bg-gradient-to-br from-[#0A192F] via-[#112240] to-[#1B2C4F] border-l border-blue-400/10 flex flex-col p-8 gap-8 overflow-auto shadow-[0_0_45px_-15px_rgba(66,153,225,0.4)] transition-transform duration-300 ease-in-out z-40 ${
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      {/* Sidebar */}
+      <aside
+        className={`fixed lg:relative z-40 flex flex-col w-[280px] h-full transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{
+          background: "var(--bg-sidebar)",
+          borderRight: "1px solid var(--border-sidebar)",
+        }}
       >
-        <Link
-          className="relative group"
-          href={"/"}
-          onClick={() => setIsMobileOpen(false)}
+        {/* Logo */}
+        <div
+          className="flex items-center gap-3 px-6 py-6"
+          style={{ borderBottom: "1px solid var(--border-default)" }}
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-300 via-cyan-200 to-blue-300 bg-clip-text text-transparent group-hover:from-blue-200 group-hover:via-cyan-100 group-hover:to-blue-200 transition-all duration-300">
-            Kleopatra
-          </h1>
-          <div className="absolute -bottom-2 left-0 w-0 h-[2px] bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-32 transition-all duration-300" />
-        </Link>
-
-        <div className="w-full flex flex-col h-1/2 overflow-hidden rounded-2xl bg-gradient-to-br from-[#0A192F]/90 to-[#112240] backdrop-blur-xl border border-blue-400/20 shadow-[0_8px_32px_-8px_rgba(66,153,225,0.3)]">
-          <div className="flex w-full px-6 py-4 justify-between items-center border-b border-blue-400/20 bg-[#112240]/40">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-400/15 shadow-inner">
-                <Shield className="w-5 h-5 text-blue-200" />
-              </div>
-              <h2 className="font-semibold text-blue-50/95">Private Keys</h2>
-            </div>
-            <Link
-              href={"/create-private-key"}
-              className="p-2 rounded-lg bg-blue-400/15 hover:bg-blue-400/25 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-blue-100" />
-            </Link>
+          <div className="icon-wrap">
+            <Lock className="w-4 h-4 text-cyan-500" />
           </div>
-
-          {isLoading ? (
-            <div className="h-full flex items-center justify-center p-8">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+          <Link href="/" onClick={closeMobile} className="group">
+            <div
+              className="text-lg font-bold tracking-tight transition-colors"
+              style={{ color: "var(--text-heading)" }}
+            >
+              Kleopatra
             </div>
-          ) : myPrivateKeys.length ? (
-            <div className="flex flex-col p-3 space-y-1">
-              {myPrivateKeys.map((key, i) => (
-                <Link
-                  href={`/private/${key.id}`}
-                  key={i}
-                  className="px-4 py-3 rounded-xl hover:bg-purple-400/15 text-purple-100/90 text-sm transition-all duration-300 hover:translate-x-1 hover:shadow-lg hover:shadow-purple-500/10 active:scale-[0.99]"
-                >
-                  {key.keyname || key.id}
-                </Link>
-              ))}
+            <div
+              className="text-[10px] font-medium tracking-widest uppercase"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              PGP Client
             </div>
-          ) : (
-            <div className="h-full flex items-center justify-center p-8">
-              <div className="text-center space-y-2">
-                <p className="text-purple-200/60 text-sm">
-                  No private keys yet
-                </p>
-                <p className="text-purple-300/40 text-xs">
-                  Click + to create your first key
-                </p>
-              </div>
-            </div>
-          )}
+          </Link>
         </div>
 
-        <div className="w-full flex flex-col h-1/2 overflow-hidden rounded-2xl bg-gradient-to-br from-black/90 to-purple-950/30 backdrop-blur-xl border border-purple-500/20 shadow-[0_8px_32px_-8px_rgba(168,85,247,0.25)]">
-          <div className="flex w-full px-6 py-4 justify-between items-center border-b border-purple-500/20 bg-purple-950/40">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-400/15 shadow-inner">
-                <Users className="w-5 h-5 text-purple-300" />
+        {/* Nav content */}
+        <div className="flex flex-col flex-1 gap-6 px-4 py-5 overflow-hidden">
+          {/* Private Keys */}
+          <div className="flex flex-col gap-2 min-h-0">
+            <div className="flex items-center justify-between px-2">
+              <div className="section-label">
+                <Shield className="w-3 h-3" />
+                Private Keys
               </div>
-              <h2 className="font-semibold text-purple-50/95">Public Keys</h2>
+              <Link
+                href="/create-private-key"
+                onClick={closeMobile}
+                className="p-1 rounded-lg transition-all"
+                style={{
+                  border: "1px solid var(--border-subtle)",
+                  color: "var(--text-tertiary)",
+                }}
+                title="Create or import private key"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <Link
-              href={"/import-public-key"}
-              className="p-2 rounded-lg bg-purple-400/15 hover:bg-purple-400/25 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-purple-200" />
-            </Link>
+
+            <div className="flex flex-col gap-0.5 overflow-y-auto">
+              {isLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2
+                    className="w-5 h-5 animate-spin"
+                    style={{ color: "var(--text-tertiary)" }}
+                  />
+                </div>
+              ) : myPrivateKeys.length ? (
+                myPrivateKeys.map((key) => {
+                  const isActive = pathname === `/private/${key.id}`;
+                  return (
+                    <Link
+                      key={key.id}
+                      href={`/private/${key.id}`}
+                      onClick={closeMobile}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-150"
+                      style={
+                        isActive
+                          ? {
+                              background: "var(--accent-subtle)",
+                              border: "1px solid var(--accent-border)",
+                              color: "var(--text-accent)",
+                            }
+                          : {
+                              color: "var(--text-secondary)",
+                              border: "1px solid transparent",
+                            }
+                      }
+                    >
+                      <KeyRound
+                        className="w-3.5 h-3.5 flex-shrink-0"
+                        style={{ color: isActive ? "var(--text-accent)" : "var(--text-tertiary)" }}
+                      />
+                      <span className="truncate">{key.keyname || key.id}</span>
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className="px-3 py-4 text-center">
+                  <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                    No private keys yet
+                  </p>
+                  <Link
+                    href="/create-private-key"
+                    onClick={closeMobile}
+                    className="inline-flex items-center gap-1 mt-2 text-xs transition-colors"
+                    style={{ color: "var(--text-tertiary)" }}
+                  >
+                    <Plus className="w-3 h-3" /> Create one
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
-          {isLoading ? (
-            <div className="h-full flex items-center justify-center p-8">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+          {/* Divider */}
+          <div className="h-px mx-2" style={{ background: "var(--border-default)" }} />
+
+          {/* Public Keys */}
+          <div className="flex flex-col gap-2 min-h-0 flex-1">
+            <div className="flex items-center justify-between px-2">
+              <div className="section-label">
+                <Users className="w-3 h-3" />
+                Public Keys
+              </div>
+              <Link
+                href="/import-public-key"
+                onClick={closeMobile}
+                className="p-1 rounded-lg transition-all"
+                style={{
+                  border: "1px solid rgba(99,102,241,0.2)",
+                  color: "var(--text-tertiary)",
+                }}
+                title="Import public key"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </Link>
             </div>
-          ) : myFriendPublicKeys.length ? (
-            <div className="flex flex-col p-3 space-y-1">
-              {myFriendPublicKeys.map((key, i) => (
-                <Link
-                  href={`/public/${key.id}`}
-                  key={i}
-                  className="px-4 py-3 rounded-xl hover:bg-purple-400/15 text-purple-100/90 text-sm transition-all duration-300 hover:translate-x-1 hover:shadow-lg hover:shadow-purple-500/10 active:scale-[0.99]"
-                >
-                  {key.keyname || key.id}
-                </Link>
-              ))}
+
+            <div className="flex flex-col gap-0.5 overflow-y-auto flex-1">
+              {isLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2
+                    className="w-5 h-5 animate-spin"
+                    style={{ color: "var(--text-tertiary)" }}
+                  />
+                </div>
+              ) : myPublicKeys.length ? (
+                myPublicKeys.map((key) => {
+                  const isActive = pathname === `/public/${key.id}`;
+                  return (
+                    <Link
+                      key={key.id}
+                      href={`/public/${key.id}`}
+                      onClick={closeMobile}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-150"
+                      style={
+                        isActive
+                          ? {
+                              background: "rgba(99,102,241,0.08)",
+                              border: "1px solid rgba(99,102,241,0.2)",
+                              color: "#6366F1",
+                            }
+                          : {
+                              color: "var(--text-secondary)",
+                              border: "1px solid transparent",
+                            }
+                      }
+                    >
+                      <Users
+                        className="w-3.5 h-3.5 flex-shrink-0"
+                        style={{ color: isActive ? "#6366F1" : "var(--text-tertiary)" }}
+                      />
+                      <span className="truncate">{key.keyname || key.id}</span>
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className="px-3 py-4 text-center">
+                  <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                    No public keys imported
+                  </p>
+                  <Link
+                    href="/import-public-key"
+                    onClick={closeMobile}
+                    className="inline-flex items-center gap-1 mt-2 text-xs transition-colors"
+                    style={{ color: "var(--text-tertiary)" }}
+                  >
+                    <Plus className="w-3 h-3" /> Import one
+                  </Link>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="h-full flex items-center justify-center p-8">
-              <p className="text-purple-200/60 text-sm">
-                Import your first public key
-              </p>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+
+        {/* Footer */}
+        <div
+          className="px-4 py-4 space-y-1"
+          style={{ borderTop: "1px solid var(--border-default)" }}
+        >
+          {/* Desktop app download */}
+          {!isLoading && !isDesktopApp && (
+            <a
+              href={DESKTOP_DOWNLOAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-xl transition-all hover:opacity-90"
+              style={{
+                background: "var(--accent-subtle)",
+                border: "1px solid var(--accent-border)",
+              }}
+            >
+              <span className="flex items-center gap-1.5" style={{ color: "var(--text-accent)" }}>
+                <AppleLogo className="w-4 h-4" />
+                <WindowsLogo className="w-[15px] h-[15px]" />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span
+                  className="block text-xs font-semibold"
+                  style={{ color: "var(--text-heading)" }}
+                >
+                  Get the desktop app
+                </span>
+                <span className="block text-[10px]" style={{ color: "var(--text-tertiary)" }}>
+                  macOS &amp; Windows · encrypted sync
+                </span>
+              </span>
+            </a>
+          )}
+          {/* Theme toggle */}
+          <button
+            onClick={toggle}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs transition-all hover:bg-black/5 dark:hover:bg-white/5"
+            style={{ color: "var(--text-secondary)" }}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? (
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+            ) : (
+              <Moon className="w-3.5 h-3.5 text-indigo-400" />
+            )}
+            <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+          </button>
+
+          {/* Online sync */}
+          <Link
+            href="/account"
+            onClick={closeMobile}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all hover:bg-black/5 dark:hover:bg-white/5"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {!syncToken ? (
+              <CloudOff className="w-3.5 h-3.5" style={{ color: "var(--text-tertiary)" }} />
+            ) : syncStatus === "error" ? (
+              <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+            ) : syncStatus === "syncing" ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-500" />
+            ) : (
+              <Cloud className="w-3.5 h-3.5 text-emerald-500" />
+            )}
+            <span className="truncate">
+              {syncToken ? syncEmail : "Enable online sync"}
+            </span>
+          </Link>
+
+          {/* Tools link */}
+          <Link
+            href="/tools"
+            onClick={closeMobile}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all hover:bg-black/5 dark:hover:bg-white/5"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <Wrench className="w-3 h-3" />
+            PGP Tools & Guides
+          </Link>
+
+          {/* Trust signals */}
+          <div className="px-3 pt-1 space-y-1.5">
+            <p
+              className="flex items-center gap-1.5 text-[10px]"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              <Shield className="w-2.5 h-2.5" />
+              Local first · Sync is end-to-end encrypted
+            </p>
+            <a
+              href="https://github.com/nicobytes/kleopatra"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[10px] transition-colors hover:opacity-75"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              <Github className="w-2.5 h-2.5" />
+              Open source on GitHub
+            </a>
+          </div>
+        </div>
+      </aside>
     </>
   );
 };

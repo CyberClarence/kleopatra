@@ -17,12 +17,10 @@ export function Dialog({ isOpen, onClose, children, title }: DialogProps) {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
       document.body.style.overflow = "hidden";
     }
-
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "unset";
@@ -33,28 +31,52 @@ export function Dialog({ isOpen, onClose, children, title }: DialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" />
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 backdrop-blur-md"
+        style={{ background: "var(--bg-overlay)" }}
+      />
 
+      {/* Modal */}
       <div
         ref={dialogRef}
-        className="relative z-50 w-full max-w-lg rounded-lg border border-cyan-800/30 bg-slate-900/95 p-6 shadow-lg animate-in fade-in zoom-in-95 duration-200"
+        className="relative z-50 w-full max-w-md animate-scale-in"
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "1.25rem",
+          boxShadow: "0 0 0 1px var(--accent-subtle), 0 32px 64px -16px rgba(0,0,0,0.3)",
+        }}
       >
-        <div className="flex items-center justify-between mb-4">
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: "1px solid var(--border-default)" }}
+        >
           {title && (
-            <h2 className="text-lg font-semibold text-cyan-100">{title}</h2>
+            <h2
+              className="text-base font-semibold tracking-tight"
+              style={{ color: "var(--text-heading)" }}
+            >
+              {title}
+            </h2>
           )}
           <button
             onClick={onClose}
-            className="ml-auto rounded-full p-1 text-cyan-400 hover:bg-cyan-400/10 transition-colors"
+            className="ml-auto p-1.5 rounded-lg transition-all"
+            style={{ color: "var(--text-tertiary)" }}
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="text-cyan-100">{children}</div>
+        {/* Body */}
+        <div className="px-6 py-5" style={{ color: "var(--text-primary)" }}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -66,7 +88,7 @@ export function DialogHeader({ children }: { children: ReactNode }) {
 
 export function DialogFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+    <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-2">
       {children}
     </div>
   );
