@@ -36,6 +36,7 @@ import { useKeyStore } from "@/feature/keystore";
 import { useSyncStore } from "@/feature/sync";
 import { useTheme } from "@/feature/theme";
 import { AppleLogo, WindowsLogo, desktopDownloadUrl } from "@/components/BrandIcons";
+import { SyncAccountModal } from "@/components/SyncAccountModal";
 
 const archivo = Archivo({ subsets: ["latin"] });
 const mono = JetBrains_Mono({ subsets: ["latin"] });
@@ -151,6 +152,7 @@ export default function Home() {
   const syncToken = useSyncStore((s) => s.token);
   const syncStatus = useSyncStore((s) => s.status);
   const syncLastAt = useSyncStore((s) => s.lastSyncedAt);
+  const [syncModalOpen, setSyncModalOpen] = useState(false);
 
   // Responsive: below 1024px we render the native mobile layout. Defaults to
   // false on the server so SSR always emits the desktop tree (keeping the
@@ -1727,9 +1729,13 @@ export default function Home() {
                       </>
                     )}
                   </div>
-                  <Link href="/account" className="sigil-btn sigil-btn-secondary" style={{ height: "28px" }}>
+                  <button
+                    className="sigil-btn sigil-btn-secondary"
+                    style={{ height: "28px" }}
+                    onClick={() => setSyncModalOpen(true)}
+                  >
                     {mounted && syncToken ? "Manage Account" : "Enable Sync"}
-                  </Link>
+                  </button>
                 </div>
               </div>
               <div className="sigil-card">
@@ -1825,11 +1831,15 @@ export default function Home() {
               <span>·</span>
             </>
           )}
-          <span>
+          <button
+            onClick={() => setSyncModalOpen(true)}
+            className="hover:opacity-75 transition-opacity"
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", font: "inherit", color: "inherit", letterSpacing: "inherit" }}
+          >
             {mounted && syncToken
               ? `Sync on · ${syncStatus === "syncing" ? "syncing…" : "end-to-end encrypted"}`
               : "Remote sync off"}
-          </span>
+          </button>
           <span className="flex-1" />
           <a
             href="https://github.com/nicobytes/kleopatra"
@@ -2231,6 +2241,13 @@ export default function Home() {
           </div>
         ))}
       </div>
+
+      {/* ── Online sync account dialog ── */}
+      <SyncAccountModal
+        open={syncModalOpen}
+        onClose={() => setSyncModalOpen(false)}
+        className={archivo.className}
+      />
     </div>
   );
 }
