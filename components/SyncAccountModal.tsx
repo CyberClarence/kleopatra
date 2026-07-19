@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Loader2, LogOut, Mail, RefreshCw, ShieldCheck, X } from "lucide-react";
+import { Check, Cloud, CloudOff, Loader2, LogOut, Mail, RefreshCw, ShieldCheck, X } from "lucide-react";
 import { useSyncStore } from "@/feature/sync";
 
 /**
@@ -367,7 +367,12 @@ export function SyncAccountModal({
             boxShadow: "var(--bevel-top)",
           }}
         >
-          <span className="flex-1" style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+          <span className="flex-1 flex items-center gap-2" style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+            {sync.token ? (
+              <Cloud className="w-4 h-4 flex-none" style={{ color: "var(--state-valid)" }} />
+            ) : (
+              <CloudOff className="w-4 h-4 flex-none" style={{ color: "var(--text-muted)" }} />
+            )}
             {sync.token ? "Online Sync — Your Account" : "Online Sync"}
           </span>
           <button className="sigil-winbtn" onClick={onClose} aria-label="Close">
