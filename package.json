@@ -45,10 +45,12 @@
     "npmRebuild": false
   },
   "dependencies": {
+    "@types/pg": "^8.20.0",
     "immer": "^10.1.1",
     "lucide-react": "^0.417.0",
     "next": "^16.1.6",
     "openpgp": "^5.11.2",
+    "pg": "^8.22.0",
     "posthog-js": "^1.399.2",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
