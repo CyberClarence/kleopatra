@@ -28,6 +28,9 @@ import {
   MoreHorizontal,
   Cloud,
   CloudOff,
+  Wifi,
+  WifiOff,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -155,6 +158,19 @@ export default function Home() {
   const syncStatus = useSyncStore((s) => s.status);
   const syncLastAt = useSyncStore((s) => s.lastSyncedAt);
   const [syncModalOpen, setSyncModalOpen] = useState(false);
+
+  // Network connectivity for the status-bar indicator.
+  const [isOnline, setIsOnline] = useState(true);
+  useEffect(() => {
+    const sync = () => setIsOnline(navigator.onLine);
+    sync();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
+  }, []);
 
   // Responsive: below 1024px we render the native mobile layout. Defaults to
   // false on the server so SSR always emits the desktop tree (keeping the
@@ -1872,29 +1888,41 @@ export default function Home() {
               <span>{myPublicKeys.length} public keys</span>
               <span>·</span>
               <span>{myPrivateKeys.length} private keys</span>
-              <span>·</span>
             </>
           )}
+          <span className="flex-1" />
           <button
             onClick={() => setSyncModalOpen(true)}
-            className="hover:opacity-75 transition-opacity"
+            className="flex items-center gap-1.5 hover:opacity-75 transition-opacity"
             style={{ background: "none", border: "none", padding: 0, cursor: "pointer", font: "inherit", color: "inherit", letterSpacing: "inherit" }}
           >
-            {mounted && syncToken
-              ? `Sync on · ${syncStatus === "syncing" ? "syncing…" : "end-to-end encrypted"}`
-              : "Remote sync off"}
+            {!mounted ? null : !isOnline ? (
+              <>
+                <WifiOff className="w-3.5 h-3.5" style={{ color: "var(--text-muted)" }} />
+                <span>Offline</span>
+              </>
+            ) : !syncToken ? (
+              <>
+                <CloudOff className="w-3.5 h-3.5" style={{ color: "var(--text-muted)" }} />
+                <span>Remote sync off</span>
+              </>
+            ) : syncStatus === "syncing" ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: "var(--steel)" }} />
+                <span>Syncing…</span>
+              </>
+            ) : syncStatus === "error" ? (
+              <>
+                <AlertCircle className="w-3.5 h-3.5" style={{ color: "var(--amber)" }} />
+                <span>Sync error</span>
+              </>
+            ) : (
+              <>
+                <Wifi className="w-3.5 h-3.5" style={{ color: "var(--state-valid)" }} />
+                <span>Sync on · end-to-end encrypted</span>
+              </>
+            )}
           </button>
-          <span className="flex-1" />
-          <a
-            href="https://github.com/nicobytes/kleopatra"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:opacity-75 transition-opacity"
-            style={{ color: "var(--text-muted)" }}
-          >
-            <Github className="w-3 h-3" />
-            Open source on GitHub
-          </a>
         </div>
       )}
 
