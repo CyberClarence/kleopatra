@@ -26,6 +26,8 @@ import {
   ChevronRight,
   Plus,
   MoreHorizontal,
+  Cloud,
+  CloudOff,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -1178,16 +1180,16 @@ export default function Home() {
             Application
           </div>
           {navBtn("settings", <SlidersHorizontal className="w-[15px] h-[15px]" />, "Settings")}
+
+          <div className="sigil-label" style={{ padding: "14px 10px 8px" }}>
+            Support
+          </div>
           <Link href="/tools" className="sigil-nav" style={{ color: "var(--text-secondary)" }}>
             <span className="flex-none inline-flex" style={{ color: "var(--text-muted)" }}>
               <Wrench className="w-[15px] h-[15px]" />
             </span>
             <span className="flex-1">PGP Tools & Guides</span>
           </Link>
-
-          <div className="sigil-label" style={{ padding: "14px 10px 8px" }}>
-            Support
-          </div>
           <a
             href="https://discord.gg/mbYdvN8hZk"
             target="_blank"
@@ -1236,32 +1238,74 @@ export default function Home() {
             </>
           )}
 
-          {/* Desktop app download */}
-          {mounted && !isDesktopApp && (
-            <div
-              className="sigil-card"
-              style={{ marginTop: "auto", padding: "12px", textAlign: "center" }}
-            >
-              <div className="flex items-center justify-center gap-2" style={{ color: "var(--text-secondary)" }}>
-                <AppleLogo style={{ width: "16px", height: "16px" }} />
-                <WindowsLogo style={{ width: "15px", height: "15px" }} />
-              </div>
-              <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginTop: "8px" }}>
-                Kleopatra Desktop
-              </div>
-              <div style={{ fontSize: "11px", color: "var(--text-muted)", margin: "3px 0 10px" }}>
-                Native app for macOS &amp; Windows, with the same encrypted sync.
-              </div>
-              <a
-                href={desktopDownloadUrl()}
-                className="sigil-btn sigil-btn-primary w-full"
-                style={{ height: "28px", justifyContent: "center" }}
+          {/* Bottom card: web → download the desktop app · desktop → online sync */}
+          {mounted &&
+            (isDesktopApp ? (
+              <div
+                className="sigil-card"
+                style={{ marginTop: "auto", padding: "12px", textAlign: "center" }}
               >
-                <Download className="w-3.5 h-3.5" />
-                Download
-              </a>
-            </div>
-          )}
+                <div className="flex items-center justify-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                  {syncToken && syncStatus !== "error" ? (
+                    <Cloud style={{ width: "16px", height: "16px", color: "var(--state-valid)" }} />
+                  ) : (
+                    <CloudOff style={{ width: "16px", height: "16px", color: "var(--text-muted)" }} />
+                  )}
+                </div>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginTop: "8px" }}>
+                  Online Sync
+                </div>
+                <div
+                  className="ph-mask"
+                  style={{ fontSize: "11px", color: "var(--text-muted)", margin: "3px 0 10px" }}
+                >
+                  {syncToken
+                    ? syncEmail
+                    : "Back up your keys, end-to-end encrypted."}
+                </div>
+                <button
+                  className="sigil-btn sigil-btn-primary w-full"
+                  style={{ height: "28px", justifyContent: "center" }}
+                  onClick={() => setSyncModalOpen(true)}
+                >
+                  {syncToken ? (
+                    <>
+                      <Cloud className="w-3.5 h-3.5" />
+                      Manage Account
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="w-3.5 h-3.5" />
+                      Sign in / Create account
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div
+                className="sigil-card"
+                style={{ marginTop: "auto", padding: "12px", textAlign: "center" }}
+              >
+                <div className="flex items-center justify-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                  <AppleLogo style={{ width: "16px", height: "16px" }} />
+                  <WindowsLogo style={{ width: "15px", height: "15px" }} />
+                </div>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginTop: "8px" }}>
+                  Kleopatra Desktop
+                </div>
+                <div style={{ fontSize: "11px", color: "var(--text-muted)", margin: "3px 0 10px" }}>
+                  Native app for macOS &amp; Windows, with the same encrypted sync.
+                </div>
+                <a
+                  href={desktopDownloadUrl()}
+                  className="sigil-btn sigil-btn-primary w-full"
+                  style={{ height: "28px", justifyContent: "center" }}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                </a>
+              </div>
+            ))}
         </nav>
 
         {/* ── My Private Keys / Public Keys ── */}
